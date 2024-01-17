@@ -3,27 +3,50 @@ import Head from 'next/head';
 import { GetServerSideProps } from 'next';
 import { GraphQLClient, gql } from 'graphql-request';
 
+// Define your GraphQL endpoint
+const endpoint = "https://kashifyousaf.great-site.net/graphql";
+
+// Function to check if the referral URL is from Facebook
+const isFacebookReferral = (referer: string | undefined) => {
+  return referer?.includes('facebook.com');
+};
+
+// Function to check if the request contains the 'fbclid' parameter
+const hasFbclidParameter = (fbclid: any) => {
+  return fbclid !== undefined;
+};
+
+// Main server-side function
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
-	const endpoint = "https://kashifyousaf.great-site.net/graphql"
-	const graphQLClient = new GraphQLClient(endpoint);
-	const referringURL = ctx.req.headers?.referer || null;
-	const pathArr = ctx.query.postpath as Array<string>;
-	const path = pathArr.join('/');
-	console.log(path);
-	const fbclid = ctx.query.fbclid;
+  const graphQLClient = new GraphQLClient(endpoint);
+  const referringURL = ctx.req.headers?.referer || null;
+  const pathArr = ctx.query.postpath as Array<string>;
+  const path = pathArr.join('/');
+  console.log(path);
+  const fbclid = ctx.query.fbclid;
 
-	// redirect if facebook is the referer or request contains fbclid
-		if (referringURL?.includes('facebook.com') || fbclid) {
+  // Check if Facebook is the referer or if the request contains 'fbclid'
+  if (isFacebookReferral(referringURL) || hasFbclidParameter(fbclid)) {
+    // Redirect to the specified destination
+    return {
+      redirect: {
+        permanent: false,
+        destination: `https://parzoom.com/vmvj9pdsr?key=aafc5688b250fc753247bef7c64a2a7a/`,
+      },
+    };
+  }
 
-		return {
-			redirect: {
-				permanent: false,
-				destination: `${
-					`https://parzoom.com/vmvj9pdsr?key=aafc5688b250fc753247bef7c64a2a7a/` 
-				}`,
-			},
-		};
-		}
+  // Continue with regular processing if not a Facebook referral
+  // ...
+
+  // Return the necessary props
+  return {
+    props: {
+      // Add any props you need to pass to the component
+    },
+  };
+};
+
 	const query = gql`
 		{
 			post(id: "/${path}/", idType: URI) {
